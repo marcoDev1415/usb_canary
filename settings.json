@@ -1,0 +1,26 @@
+{
+  "settings": {
+    "telegram": {
+      "bot_token": "CAMBIA_POR_TU_BOT_TOKEN_DE_BOTFATHER",
+      "id_client": "CAMBIA_POR_TU_CHAT_ID"
+    },
+    "slack": {
+      "channel_name": "usb_canary",
+      "api_key": "xoxb-CAMBIA-POR-TU-TOKEN-DE-SLACK",
+      "botname": "USB Canary"
+    },
+    "twilio": {
+      "auth_token": "CAMBIA_POR_TU_AUTH_TOKEN_DE_TWILIO",
+      "mobile_number": "+0987654321",
+      "twilio_number": "+1234567890",
+      "account_sid": "CAMBIA_POR_TU_ACCOUNT_SID_DE_TWILIO"
+    },
+    "general": {
+      "paranoid": true,
+      "screensaver": "gnome-screensaver",
+      "slack": false,
+      "twilio": false,
+      "telegram": true
+    }
+  }
+}
