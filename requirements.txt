@@ -1,7 +1,8 @@
 # Versiones actualizadas para Python 3.11.2
 # Eliminada dependencia python-apt para mayor compatibilidad
+# Cambiado a telepot para mayor compatibilidad con código existente
 slack-sdk>=3.21.0
 twilio>=8.0.0
 pyudev>=0.24.0
 python-daemon>=3.0.0
-python-telegram-bot>=20.0
+telepot>=12.7

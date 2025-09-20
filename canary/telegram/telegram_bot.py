@@ -1,9 +1,7 @@
 try:
-    from telegram import Bot
-    from telegram.error import TelegramError
-    import asyncio
+    import telepot
 except ImportError as e:
-    if 'telegram' not in str(e):
+    if 'telepot' not in str(e):
         pass
 
 import sys
@@ -17,20 +15,12 @@ def setup(telegram, client):
     No setup doing for this moment
     '''
 
-async def send_message_async(bot_token, chat_id, message):
-    """Send message asynchronously"""
-    bot = Bot(token=bot_token)
-    try:
-        await bot.send_message(chat_id=chat_id, text=message)
-    except TelegramError as e:
-        print(f"Telegram Error: {e}")
-        sys.exit(1)
-
 def run_bot(message, id_client, bot_token):
-    """Send message using asyncio"""
+    """Send message using telepot (compatible version)"""
     try:
-        # Ejecutar de forma síncrona usando asyncio
-        asyncio.run(send_message_async(bot_token, id_client, message))
+        bot = telepot.Bot(bot_token)
+        bot.sendMessage(int(id_client), message)
+        print(f"Mensaje enviado a Telegram: {message[:50]}...")
     except Exception as e:
         print(f"Error sending Telegram message: {e}")
-        sys.exit(1)
+        # No hacer sys.exit para que el daemon continue funcionando
