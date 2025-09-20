@@ -1,6 +1,6 @@
-from __future__ import absolute_import, division, print_function
-import apt
 import sys
+import subprocess
+import shutil
 import canary.settings
 
 supported_screensavers = ('gnome-screensaver', 'xscreensaver')
@@ -40,16 +40,55 @@ def save_screensaver(screensaver):
 
 
 def identify_screensaver():
-    cache = apt.Cache()
-    installed_screensavers = [ss for ss in supported_screensavers
-                              if cache[ss].is_installed]
+    """
+    Identifica el screensaver instalado usando métodos compatibles con múltiples distribuciones
+    """
+    installed_screensavers = []
+    
+    # Método 1: Verificar binarios ejecutables
+    for screensaver in supported_screensavers:
+        if screensaver == 'xscreensaver':
+            if shutil.which('xscreensaver') or shutil.which('xscreensaver-command'):
+                installed_screensavers.append(screensaver)
+        elif screensaver == 'gnome-screensaver':
+            if shutil.which('gnome-screensaver') or shutil.which('gnome-screensaver-command'):
+                installed_screensavers.append(screensaver)
+    
+    # Método 2: Si no encontramos con shutil.which, intentar con dpkg (Debian/Ubuntu)
     if not installed_screensavers:
+        for screensaver in supported_screensavers:
+            try:
+                result = subprocess.run(['dpkg', '-l', screensaver], 
+                                      capture_output=True, text=True, timeout=5)
+                if result.returncode == 0 and 'ii' in result.stdout:
+                    installed_screensavers.append(screensaver)
+            except (subprocess.TimeoutExpired, FileNotFoundError):
+                # dpkg no disponible o timeout, continuar
+                pass
+    
+    # Método 3: Intentar con rpm (Red Hat/Fedora/CentOS)
+    if not installed_screensavers:
+        for screensaver in supported_screensavers:
+            try:
+                result = subprocess.run(['rpm', '-q', screensaver], 
+                                      capture_output=True, text=True, timeout=5)
+                if result.returncode == 0:
+                    installed_screensavers.append(screensaver)
+            except (subprocess.TimeoutExpired, FileNotFoundError):
+                # rpm no disponible o timeout, continuar
+                pass
+    
+    # Evaluar resultados
+    if not installed_screensavers:
+        print("No se detectó ningún screensaver soportado. Por favor, especifica manualmente en settings.json")
+        print(f"Screensavers soportados: {', '.join(supported_screensavers)}")
         sys.exit(126)
     elif len(installed_screensavers) == 1:
+        print(f"Screensaver detectado automáticamente: {installed_screensavers[0]}")
         return installed_screensavers[0]
     else:
-        print("XScreenSaver and gnome-screensaver detected. Please select "
-              "active screensaver in the settings file before proceeding.")
+        print("Múltiples screensavers detectados. Por favor, especifica cuál usar en settings.json")
+        print(f"Detectados: {', '.join(installed_screensavers)}")
         sys.exit(125)
 
 

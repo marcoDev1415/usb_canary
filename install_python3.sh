@@ -42,7 +42,7 @@ pip install --upgrade pip
 # Instalar dependencias del sistema
 echo "🔧 Instalando dependencias del sistema..."
 sudo apt update
-sudo apt install -y python3-apt libudev-dev
+sudo apt install -y libudev-dev build-essential
 
 # Instalar dependencias de Python
 echo "📚 Instalando dependencias de Python..."

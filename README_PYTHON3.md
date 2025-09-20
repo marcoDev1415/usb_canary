@@ -18,6 +18,7 @@ Este proyecto ha sido completamente migrado de Python 2.7 a **Python 3.11.2** co
   - `twilio` actualizado a versión 8.0.0+
 - **Sintaxis Python 3**: f-strings, async/await, manejo de excepciones moderno
 - **APIs actualizadas**: Slack Web API, Telegram Bot API v6+, Twilio v8+
+- **Sin dependencia python-apt**: Detección de screensaver más compatible
 
 ### 📋 Prerrequisitos para Python 3.11.2
 
@@ -28,13 +29,14 @@ Instalar dependencias actualizadas:
 pip3 install -r requirements.txt
 
 # También necesitas (en Debian/Ubuntu):
-sudo apt install python3-apt
+sudo apt install libudev-dev build-essential
 ```
 
 ### 📦 Nuevas dependencias (requirements.txt)
 
 ```
 # Versiones actualizadas para Python 3.11.2
+# Eliminada dependencia python-apt para mayor compatibilidad
 slack-sdk>=3.21.0
 twilio>=8.0.0
 pyudev>=0.24.0
