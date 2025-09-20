@@ -19,13 +19,14 @@
 # GNU General Public License for more details.
 import os
 import platform
+import signal
 import socket
 import sys
 import time
 
 import pyudev
 from daemon import DaemonContext
-import daemon.pidfile
+from daemon.pidfile import TimeoutPIDLockFile
 
 from canary import message_handler
 from canary import settings
@@ -135,8 +136,21 @@ class Usb_Canary:
     
     def start(self):
         """Start the daemon"""
+        # Verificar si ya está corriendo
+        if self._is_running():
+            print("Daemon ya está ejecutándose")
+            return 1
+        
         try:
-            with DaemonContext(pidfile=daemon.pidfile.TimeoutPIDLockFile(self.pidfile)):
+            # Crear el contexto del daemon
+            pidfile = TimeoutPIDLockFile(self.pidfile)
+            context = DaemonContext(
+                pidfile=pidfile,
+                working_directory=os.getcwd(),
+                umask=0o002,
+            )
+            
+            with context:
                 self.run()
         except Exception as e:
             print(f"Error starting daemon: {e}")
@@ -145,6 +159,10 @@ class Usb_Canary:
     
     def stop(self):
         """Stop the daemon"""
+        if not self._is_running():
+            print("Daemon no está ejecutándose")
+            return 1
+            
         try:
             with open(self.pidfile, 'r') as pf:
                 pid = int(pf.read().strip())
@@ -153,9 +171,19 @@ class Usb_Canary:
             return 1
         
         try:
-            import signal
             os.kill(pid, signal.SIGTERM)
-            os.remove(self.pidfile)
+            # Esperar un poco para que termine
+            time.sleep(2)
+            
+            # Verificar si terminó
+            if self._is_running():
+                print("Forzando terminación...")
+                os.kill(pid, signal.SIGKILL)
+                time.sleep(1)
+            
+            # Limpiar PID file
+            if os.path.exists(self.pidfile):
+                os.remove(self.pidfile)
             print("Daemon stopped")
             return 0
         except OSError as e:
@@ -165,7 +193,19 @@ class Usb_Canary:
     def restart(self):
         """Restart the daemon"""
         self.stop()
+        time.sleep(1)
         return self.start()
+    
+    def _is_running(self):
+        """Check if daemon is running"""
+        try:
+            with open(self.pidfile, 'r') as pf:
+                pid = int(pf.read().strip())
+            # Verificar si el proceso existe
+            os.kill(pid, 0)
+            return True
+        except (OSError, IOError, ValueError):
+            return False
 
 
 if __name__ == '__main__':
